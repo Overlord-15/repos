@@ -42,6 +42,10 @@
 	color: blue;
 }
 
+.item.active-slide {
+	color: green !important;
+}
+
 .btns {
 	display: flex;
 }
@@ -51,6 +55,68 @@
 	margin: 20px 10px;
 	cursor: pointer;
 }
+
+ul {
+	display: flex;
+	justify-content: center;
+	width: 50vw;
+	margin: 10px auto;
+	border: 1px solid black;
+	list-style: none;
+	height: 2vw;
+	align-items: center;
+}
+
+ul li {
+	width: 0.7vw;
+	height: 0.7vw;
+	margin: 0 7px;
+	border: 2px solid black;
+	border-radius: 100%;
+}
+
+li.active {
+	background: black;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 @media screen and (max-width: 900px) {
