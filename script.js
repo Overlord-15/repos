@@ -21,9 +21,10 @@ class MyCustomSlider {
   			
 			}
 		}
-		console.log(this)
-	
+
+
 		this.adaptive = this.props.adaptive
+
 		if(this.adaptive) {
 			this.adaptive.sort(function(a, b){
 		        return a.breakpoint - b.breakpoint
@@ -36,6 +37,7 @@ class MyCustomSlider {
 
 		this.slideNow = 0
 
+
 		for(let i = this.items.length - 1; i >= 0; i--) {
 			let temp = this.items[i].cloneNode(true)
 			temp.classList.add('left')
@@ -47,15 +49,34 @@ class MyCustomSlider {
 			temp.classList.add('right')
 			this.slidesWrapper.append(temp)
 		}
+
+		
+		this.createDots()
+
 		this.allItems = this.elem.querySelectorAll('.slides-wrapper .item')
+
 
 		this.update()
 
 		this.slidesWrapper.style.transform = 'translateX(' + this.translateDefault + 'px)'
 		this.slidesWrapper.style.transition = this.duration / 1000 + 's'
 
+
 		this.bindPrevSlide = this.prevSlide.bind(this)
 		this.bindNextSlide = this.nextSlide.bind(this)
+		this.bindGoToSlide = this.goToSlide.bind(this)
+
+
+		this.autoplayReady = true
+
+		if(this.props.autoplay) {
+			setInterval(() => {
+				if(this.autoplayReady) {
+					this.bindNextSlide()
+				}
+			}, this.props.autoplayDelay || 2000)
+
+		}
 
 		this.btnLeft.addEventListener('click', this.bindPrevSlide)
 		this.btnRight.addEventListener('click', this.bindNextSlide)
@@ -68,7 +89,6 @@ class MyCustomSlider {
 	}
 
 	update() {
-
 		if(this.adaptive) {
 			let match = false
 			for(let i = 0; i < this.adaptive.length; i++) {
@@ -86,6 +106,7 @@ class MyCustomSlider {
 
 				}
 			}
+			this.addActiveClass()
 		}
 		
 		this.itemWidth = parseInt(this.viewport.offsetWidth) / this.slidesToShow
@@ -98,33 +119,36 @@ class MyCustomSlider {
 		}
 
 		this.slidesWrapper.style.transform = 'translateX(' + (this.slideNow + this.items.length) * -this.itemWidth + 'px)'
-		console.log((this.slideNow + this.items.length) * -this.itemWidth)
 	}
 
 
 	nextSlide() {
 		this.slidesWrapper.style.transform = 'translateX(' + parseInt((this.slideNow + this.slidesToScroll) * -this.itemWidth + this.translateDefault) + 'px)'
-	
 		this.slideNow += this.slidesToScroll
 		if (this.slideNow + this.slidesToScroll + this.slidesToShow - 1 > this.items.length * 2 - 1) {
-
 			this.btnLeft.removeEventListener('click', this.bindPrevSlide)
 			this.btnRight.removeEventListener('click', this.bindNextSlide)
+			this.autoplayReady = false
+			this.createDots()
 			setTimeout(() => {
 				this.slidesWrapper.style.transition = 'none'
 				this.slidesWrapper.style.transform = 'translateX(' + (-(this.slideNow) * this.itemWidth) + 'px)'
-				console.log(this.slideNow)
-				console.log(this.items.length)
 				this.slideNow -= this.items.length
 				
 				setTimeout(() => {
 					this.slidesWrapper.style.transition = this.duration / 1000 + 's'
 					this.btnLeft.addEventListener('click', this.bindPrevSlide)
 					this.btnRight.addEventListener('click', this.bindNextSlide)
-				}, 30)
+					this.autoplayReady = true
+					this.addActiveClass()
+					
+				}, 40)
 				
 			}, this.duration)	
+			return
 		}
+		this.addActiveClass()
+		this.createDots()
 		
 	}
 
@@ -134,6 +158,8 @@ class MyCustomSlider {
 		if(this.slideNow - this.slidesToScroll < -this.items.length) {
 			this.btnLeft.removeEventListener('click', this.bindPrevSlide)
 			this.btnRight.removeEventListener('click', this.bindNextSlide)
+			this.autoplayReady = false
+			this.createDots()
 			setTimeout(() => {
 				this.slidesWrapper.style.transition = 'none'
 				this.slidesWrapper.style.transform = 'translateX(' + parseInt(-(this.slideNow + this.items.length * 2) * this.itemWidth) + 'px)'
@@ -142,28 +168,104 @@ class MyCustomSlider {
 					this.slidesWrapper.style.transition = this.duration / 1000 + 's'
 					this.btnLeft.addEventListener('click', this.bindPrevSlide)
 					this.btnRight.addEventListener('click', this.bindNextSlide)
+					this.autoplayReady = true
+					this.addActiveClass()
 				}, 30)
 				
 			}, this.duration)	
+			return
 			
 		}
+		this.addActiveClass()
+		this.createDots()
+		
+	}
+
+	addActiveClass() {
+		if(this.props.addActiveClass) {
+			for(let i = 0; i < this.allItems.length; i++) {
+				this.allItems[i].classList.remove('active-slide')
+			}
+			for(let i = 0; i < this.slidesToShow; i++) {
+				this.allItems[this.items.length + this.slideNow + i].classList.add('active-slide')
+			}
+		}
+
+	}
+
+	createDots() {
+		if(!this.dotsUl) {
+			this.dotsUl = document.createElement('ul')
+			this.dotsLi = []
+			for(let i = 0; i < this.items.length; i++) {
+				let temp = document.createElement('li')
+				temp.addEventListener('click', () => {
+					this.bindGoToSlide(i)
+				})
+				this.dotsLi.push(temp)
+				this.dotsUl.append(temp)
+			}
+
+			this.viewport.after(this.dotsUl)
+		}
+
+		for(let i = 0; i < this.dotsLi.length; i++) {
+			this.dotsLi[i].classList.remove('active')
+		}
+		if(this.slideNow >= this.items.length) {
+			this.dotsLi[this.slideNow - this.items.length].classList.add('active')
+		} else if(this.slideNow < 0) {
+			this.dotsLi[this.items.length + this.slideNow].classList.add('active')
+		} else {
+			this.dotsLi[this.slideNow].classList.add('active')
+		}	
+	}
+
+	goToSlide(slide) {
+		this.slidesWrapper.style.transform = 'translateX(' +  ((-(slide - this.slideNow) * this.itemWidth) + this.slideNow * -this.itemWidth + this.translateDefault) + 'px)'
+		this.slideNow += slide - this.slideNow
+		console.log(this.slideNow)
+		if (this.slideNow + this.slidesToScroll + this.slidesToShow - 1 > this.items.length * 2 - 1) {
+			this.btnLeft.removeEventListener('click', this.bindPrevSlide)
+			this.btnRight.removeEventListener('click', this.bindNextSlide)
+			this.autoplayReady = false
+			this.createDots()
+			setTimeout(() => {
+				this.slidesWrapper.style.transition = 'none'
+				this.slidesWrapper.style.transform = 'translateX(' + (-(this.slideNow) * this.itemWidth) + 'px)'
+				this.slideNow -= this.items.length
+				
+				setTimeout(() => {
+					this.slidesWrapper.style.transition = this.duration / 1000 + 's'
+					this.btnLeft.addEventListener('click', this.bindPrevSlide)
+					this.btnRight.addEventListener('click', this.bindNextSlide)
+					this.autoplayReady = true
+					this.addActiveClass()
+					
+				}, 40)
+				
+			}, this.duration)	
+			return
+		}
+		this.addActiveClass()
+		this.createDots()
 	}
 }
 
 
 document.addEventListener("DOMContentLoaded", (event) => {
-	let s = document.querySelector('.slider')
-	let slider = new MyCustomSlider(s, {
+
+	let slider = new MyCustomSlider(document.querySelector('.slider'), {
 		slidesToShow: 3,
 		slidesToScroll: 2,
 		duration: 500,
 	})
 
-	let s2 = document.querySelector('.slider2')
-	let slider2 = new MyCustomSlider(s2, {
-		slidesToShow: 4,
-		slidesToScroll: 2,
+	let slider2 = new MyCustomSlider(document.querySelector('.slider2'), {
+		slidesToShow: 1,
+		slidesToScroll: 1,
 		duration: 500,
+		addActiveClass: true,
 		adaptive: [{
 			breakpoint: 768,
               	settings: {
@@ -174,8 +276,8 @@ document.addEventListener("DOMContentLoaded", (event) => {
 		{
 			breakpoint: 900,
 				settings: {
-					slidesToShow: 3,
-					slidesToScroll: 2
+					slidesToShow: 1,
+					slidesToScroll: 1
 				}
 		}
 		]
