@@ -107,6 +107,7 @@ class MyCustomSlider {
 				}
 			}
 			this.addActiveClass()
+			this.addNoActiveClass()
 		}
 		
 		this.itemWidth = parseInt(this.viewport.offsetWidth) / this.slidesToShow
@@ -125,11 +126,13 @@ class MyCustomSlider {
 	nextSlide() {
 		this.slidesWrapper.style.transform = 'translateX(' + parseInt((this.slideNow + this.slidesToScroll) * -this.itemWidth + this.translateDefault) + 'px)'
 		this.slideNow += this.slidesToScroll
+		this.addNoActiveClass()
 		if (this.slideNow + this.slidesToScroll + this.slidesToShow - 1 > this.items.length * 2 - 1) {
 			this.btnLeft.removeEventListener('click', this.bindPrevSlide)
 			this.btnRight.removeEventListener('click', this.bindNextSlide)
 			this.autoplayReady = false
 			this.createDots()
+
 			setTimeout(() => {
 				this.slidesWrapper.style.transition = 'none'
 				this.slidesWrapper.style.transform = 'translateX(' + (-(this.slideNow) * this.itemWidth) + 'px)'
@@ -141,6 +144,7 @@ class MyCustomSlider {
 					this.btnRight.addEventListener('click', this.bindNextSlide)
 					this.autoplayReady = true
 					this.addActiveClass()
+					
 					
 				}, 40)
 				
@@ -155,6 +159,7 @@ class MyCustomSlider {
 	prevSlide() {
 		this.slidesWrapper.style.transform = 'translateX(' + parseInt((this.slideNow - this.slidesToScroll) * -this.itemWidth + this.translateDefault) + 'px)'
 		this.slideNow -= this.slidesToScroll
+		this.addNoActiveClass()
 		if(this.slideNow - this.slidesToScroll < -this.items.length) {
 			this.btnLeft.removeEventListener('click', this.bindPrevSlide)
 			this.btnRight.removeEventListener('click', this.bindNextSlide)
@@ -233,12 +238,15 @@ class MyCustomSlider {
 			this.slidesWrapper.style.transform = 'translateX(' +  ((-(slide - this.slideNow) * this.itemWidth) + this.slideNow * -this.itemWidth + this.translateDefault) + 'px)'
 			this.slideNow += slide - this.slideNow
 		}
+
 		
+		this.addNoActiveClass()
 		if (this.slideNow + this.slidesToScroll + this.slidesToShow - 1 > this.items.length * 2 - 1) {
 			this.btnLeft.removeEventListener('click', this.bindPrevSlide)
 			this.btnRight.removeEventListener('click', this.bindNextSlide)
 			this.autoplayReady = false
 			this.createDots()
+			this.addNoActiveClass(2)
 			setTimeout(() => {
 				this.slidesWrapper.style.transition = 'none'
 				this.slidesWrapper.style.transform = 'translateX(' + (-(this.slideNow) * this.itemWidth) + 'px)'
@@ -250,7 +258,6 @@ class MyCustomSlider {
 					this.btnRight.addEventListener('click', this.bindNextSlide)
 					this.autoplayReady = true
 					this.addActiveClass()
-					
 				}, 40)
 				
 			}, this.duration)	
@@ -260,6 +267,7 @@ class MyCustomSlider {
 			this.btnRight.removeEventListener('click', this.bindNextSlide)
 			this.autoplayReady = false
 			this.createDots()
+			this.addNoActiveClass(1)
 			setTimeout(() => {
 				this.slidesWrapper.style.transition = 'none'
 				this.slidesWrapper.style.transform = 'translateX(' + parseInt(-(this.slideNow + this.items.length * 2) * this.itemWidth) + 'px)'
@@ -270,6 +278,7 @@ class MyCustomSlider {
 					this.btnRight.addEventListener('click', this.bindNextSlide)
 					this.autoplayReady = true
 					this.addActiveClass()
+					
 				}, 30)
 				
 			}, this.duration)	
@@ -278,9 +287,39 @@ class MyCustomSlider {
 		}
 
 		this.addActiveClass()
+		this.addNoActiveClass()
 		this.createDots()
-		console.log(this.slideNow)
 	}
+
+	addNoActiveClass(num) {
+		for(let i = 0; i < this.allItems.length; i++) {
+			if(i === this.items.length + this.slideNow) {
+				if(num === 2) {
+					this.allItems[i - this.items.length].classList.add('active-opacity-slide')
+					this.allItems[i - this.items.length].classList.remove('no-active-opacity-slide')
+				}
+
+				if(num === 1) {
+					console.log(this.allItems[i + this.items.length], i, '!!!!!!!!!!!!!')
+					this.allItems[i + this.items.length].classList.add('active-opacity-slide')
+					this.allItems[i + this.items.length].classList.remove('no-active-opacity-slide')
+				}
+
+				this.allItems[i].classList.add('active-opacity-slide')
+				this.allItems[i].classList.remove('no-active-opacity-slide')
+			} else if(num === 1 || i === this.slideNow) {
+				
+			} else {
+				console.log(this.allItems[i], i, 'num' + num)
+				this.allItems[i].classList.add('no-active-opacity-slide')
+				this.allItems[i].classList.remove('active-opacity-slide')
+			}	
+
+		}
+		console.log("==============")
+		
+	}
+
 }
 
 
