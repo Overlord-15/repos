@@ -6,6 +6,7 @@ class MyCustomSlider {
 	}
 
 	init() {
+		console.log('DROP TABLE USERS')
 		this.viewport = this.elem.querySelector('.viewport')
 		this.slidesWrapper = this.elem.querySelector('.slides-wrapper')
 		this.items = this.elem.querySelectorAll('.slides-wrapper .item')
